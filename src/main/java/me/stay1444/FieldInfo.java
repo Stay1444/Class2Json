@@ -4,4 +4,5 @@ public class FieldInfo {
     public String name;
     public String type;
     public Modifier[] modifiers;
+    public boolean isEnumVariant;
 }

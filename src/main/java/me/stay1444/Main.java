@@ -28,19 +28,36 @@ public class Main {
 
         var reader = new ClassReader(inputStream);
         reader.accept(new ClassVisitor(Opcodes.ASM9) {
+            ClassType type = ClassType.Class;
+
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+                if ((access & Opcodes.ACC_ENUM) != 0) {
+                    type = ClassType.Enum;
+                }
+
+                if ((access & Opcodes.ACC_ANNOTATION) != 0) {
+                    type = ClassType.Annotation;
+                }
+
+                if ((access & Opcodes.ACC_INTERFACE) != 0) {
+                    type = ClassType.Interface;
+                }
+
                 info.name = name.replace("/", ".");
                 info.parentClass = (superName != null ? superName.replace("/", ".") : null);
                 info.implementedInterfaces = Arrays.stream(interfaces).map(x -> x.replace("/", ".")).collect(Collectors.toList()).toArray(new String[0]);
                 info.modifiers = me.stay1444.Modifier.fromInt(access);
+                info.type = type;
             }
 
             @Override
             public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+
                 var field = new FieldInfo();
                 field.name = name;
                 field.type = descriptor;
+                field.isEnumVariant = type == ClassType.Enum && (access & Opcodes.ACC_ENUM) != 0;
                 field.modifiers = me.stay1444.Modifier.fromInt(access);
                 fields.add(field);
 
